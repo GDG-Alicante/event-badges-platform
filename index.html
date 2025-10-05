@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GDG Alicante - Reclamar Insignia</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="favicon.svg">
+</head>
+<body>
+
+    <!-- Contenedor Principal Persistente -->
+    <div class="container">
+
+        <!-- Cabecera Persistente -->
+        <div class="header">
+            <img src="gdg_logo.png" alt="Logo GDG Alicante" class="gdg-logo">
+            <h1 id="main-title">Reclama tu Insignia Digital</h1>
+        </div>
+
+        <!-- Vista: Formulario de Reclamación -->
+        <div id="claim-view">
+            <div class="prose">
+                <p>
+                    Introduce el correo electrónico que usaste en el registro y selecciona el evento para generar tu insignia.
+                </p>
+                <div class="notice-box">
+                    <h3>Aviso de Publicación y Privacidad</h3>
+                    <p>
+                        Al continuar, se generará y publicará de forma permanente una credencial digital (Open Badge) que contendrá <strong>tu nombre completo</strong> y los <strong>detalles del evento</strong>.
+                    </p>
+                    <ul>
+                        <li>La insignia se asociará a tu dirección de correo: <strong>tu email no será público</strong>, pero es la clave para verificar y gestionar tu credencial.</li>
+                    </ul>
+                    <p>
+                        La credencial en sí será visible en una página pública para su validación.
+                    </p>
+                </div>
+            </div>
+
+            <h2 id="event-name" style="display: none;"></h2>
+
+            <div id="loading-indicator">
+                <p>Cargando eventos disponibles...</p>
+                <div class="spinner"></div>
+            </div>
+
+            <div id="form-container" style="display: none;">
+                <form id="claim-form">
+                    <div id="event-selector-placeholder">
+                        <div class="form-group">
+                            <label for="event-selector">1. Selecciona el evento:</label>
+                            <select id="event-selector"></select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="email-input" id="email-label">2. Introduce tu correo electrónico:</label>
+                        <input type="email" id="email-input" required placeholder="tu.email@ejemplo.com">
+                    </div>
+                    <button type="submit" id="submit-button">Generar mi Insignia</button>
+                </form>
+                <div id="status" style="display: none;"></div>
+            </div>
+        </div>
+
+        <!-- Vista: Mensaje de Agradecimiento -->
+        <div id="thank-you-view" style="display: none;">
+            <div class="thank-you-content">
+                <h2>¡Enhorabuena!</h2>
+                <p>Hemos verificado tu asistencia y estamos generando tus credenciales. Este proceso puede tardar uno o dos minutos.</p>
+                
+                <div class="credentials-links">
+                    <h3>Tus Credenciales</h3>
+                    <p>
+                        <strong>Certificado Visual (HTML):</strong> Un diploma en formato web para visualizar y compartir rápidamente.
+                    </p>
+                    <a id="certificate-link" href="#" target="_blank" class="button-like">Ver mi Certificado</a>
+                    
+                    <p>
+                        <strong>Insignia Abierta (JSON):</strong> El archivo oficial para importar en tu mochila de insignias y añadir a perfiles profesionales.
+                    </p>
+                    <a id="openbadge-link" href="#" target="_blank" class="button-like">Open Badge</a>
+                </div>
+
+                <h3>¿Necesitas ayuda?</h3>
+                <p>Contacta con la organización a través de nuestros canales:</p>
+                <ul class="social-links">
+                    <li><a href="mailto:gdg-alicante@googlegroups.com" target="_blank">Email</a></li>
+                    <li><a href="https://chat.whatsapp.com/Gm69JFzlmpfB3ag9onbtNM" target="_blank">WhatsApp</a></li>
+                    <li><a href="https://www.linkedin.com/company/gdg-alicante" target="_blank">LinkedIn</a></li>
+                    <li><a href="https://discord.gg/EemWJD6P" target="_blank">Discord</a></li>
+                </ul>
+                <button id="new-claim-button">Solicitar otra insignia</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="main.dart.js"></script>
+</body>
+</html>
