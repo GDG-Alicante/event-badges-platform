@@ -8,6 +8,7 @@ import 'package:gdg_alicante_badges_backend/templates/badge_template.dart';
 // #############################################################################
 // # UUID and Hashing Utilities
 // #############################################################################
+final committer = CommitUser('gdg-alicante', 'gdg-alicante@gmail.com');
 
 class Uuid {
   final _random = Random();
@@ -155,6 +156,7 @@ Future<void> commitFileToGitHub(
         content: isBase64 ? content : base64Encode(utf8.encode(content)),
         message: message,
         branch: branch,
+        committer: committer,
       ),
     );
     print(
