@@ -86,7 +86,7 @@ Revisa la pestaña **Actions** para verificar que ambos flujos terminan correcta
 
 ## ☁️ Despliegue Manual del Backend en Cloud Run
 
-También puedes desplegar manualmente el backend desde tu entorno local con `gcloud`.
+Puedes desplegar manualmente el backend desde tu entorno local con `gcloud`.
 
 ### Ejemplo de comandos reales:
 

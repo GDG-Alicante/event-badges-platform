@@ -1,0 +1,13 @@
+
+# Dart
+.dart_tool/
+.packages
+build/
+*.lock
+
+# Logs
+*.log
+*.lock
+
+# macOS
+.DS_Store
