@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -11,30 +12,32 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="icon" href="favicon.svg">
 </head>
+
 <body>
 
     <!-- Contenedor Principal Persistente -->
     <div class="container">
 
-        <!-- Cabecera Persistente -->
-        <div class="header">
-            <img src="gdg_logo.png" alt="Logo GDG Alicante" class="gdg-logo">
-            <h1 id="main-title">Reclama tu Insignia Digital</h1>
-        </div>
-
         <!-- Vista: Formulario de Reclamación -->
-        <div id="claim-view">
+        <div id="claim-view" style="display: none;">
+            <div class="header">
+                <img src="gdg_logo.png" alt="Logo GDG Alicante" class="gdg-logo">
+                <h1 id="main-title">Reclama tu Insignia Digital</h1>
+            </div>
             <div class="prose">
                 <p>
-                    Introduce el correo electrónico que usaste en el registro y selecciona el evento para generar tu insignia.
+                    Introduce el correo electrónico que usaste en el registro y selecciona el evento para generar tu
+                    insignia.
                 </p>
                 <div class="notice-box">
                     <h3>Aviso de Publicación y Privacidad</h3>
                     <p>
-                        Al continuar, se generará y publicará de forma permanente una credencial digital (Open Badge) que contendrá <strong>tu nombre completo</strong> y los <strong>detalles del evento</strong>.
+                        Al continuar, se generará y publicará de forma permanente una credencial digital (Open Badge)
+                        que contendrá <strong>tu nombre completo</strong> y los <strong>detalles del evento</strong>.
                     </p>
                     <ul>
-                        <li>La insignia se asociará a tu dirección de correo: <strong>tu email no será público</strong>, pero es la clave para verificar y gestionar tu credencial.</li>
+                        <li>La insignia se asociará a tu dirección de correo: <strong>tu email no será público</strong>,
+                            pero es la clave para verificar y gestionar tu credencial.</li>
                     </ul>
                     <p>
                         La credencial en sí será visible en una página pública para su validación.
@@ -67,34 +70,44 @@
             </div>
         </div>
 
-        <!-- Vista: Mensaje de Agradecimiento -->
+        <!-- Vista: Agradecimiento -->
         <div id="thank-you-view" style="display: none;">
-            <div class="thank-you-content">
-                <h2>¡Enhorabuena!</h2>
-                <p>Hemos verificado tu asistencia y estamos generando tus credenciales. Este proceso puede tardar uno o dos minutos.</p>
-                
-                <div class="credentials-links">
-                    <h3>Tus Credenciales</h3>
-                    <p>
-                        <strong>Certificado Visual (HTML):</strong> Un diploma en formato web para visualizar y compartir rápidamente.
-                    </p>
-                    <a id="certificate-link" href="#" target="_blank" class="button-like">Ver mi Certificado</a>
-                    
-                    <p>
-                        <strong>Insignia Abierta (JSON):</strong> El archivo oficial para importar en tu mochila de insignias y añadir a perfiles profesionales.
-                    </p>
-                    <a id="openbadge-link" href="#" target="_blank" class="button-like">Open Badge</a>
-                </div>
+            <div class="header">
+                <img src="gdg_logo.png" alt="Logo GDG Alicante" class="gdg-logo">
+            </div>
+            <div class="prose">
+                <h2>Enhorabuena!</h2>
 
-                <h3>¿Necesitas ayuda?</h3>
-                <p>Contacta con la organización a través de nuestros canales:</p>
-                <ul class="social-links">
-                    <li><a href="mailto:gdg-alicante@googlegroups.com" target="_blank">Email</a></li>
-                    <li><a href="https://chat.whatsapp.com/Gm69JFzlmpfB3ag9onbtNM" target="_blank">WhatsApp</a></li>
-                    <li><a href="https://www.linkedin.com/company/gdg-alicante" target="_blank">LinkedIn</a></li>
-                    <li><a href="https://discord.gg/EemWJD6P" target="_blank">Discord</a></li>
-                </ul>
-                <button id="new-claim-button">Solicitar otra insignia</button>
+                <p>Tu insignia está siendo generanda.</p>
+
+                <p>Esto puede tardar unos minutos. Se te redirigirá a la página de tu insignia, que estará disponible en
+                    cuanto termine el proceso.</p>
+                <p>Si la redirección automática falla, usa el botón de abajo.</p>
+            </div>
+            <div class="button-group">
+                <button id="view-badge-button">Ir a la página de la insignia</button>
+                <button id="new-claim-button" class="secondary">Reclamar otra insignia</button>
+            </div>
+        </div>
+
+        <!-- Vista: Certificado -->
+        <div id="certificate-view" style="display: none;">
+            <div class="card" id="certificate-card">
+                <div class="card-header">
+                    <img id="issuer-logo" src="" alt="Logo del Emisor" class="issuer-logo">
+                </div>
+                <div class="card-body">
+                    <img id="badge-image" src="" alt="Imagen de la Insignia" class="badge-image">
+                    <h2 id="badge-name" class="badge-name"></h2>
+                    <p id="badge-description" class="badge-description"></p>
+                    <p class="recipient-intro">Certificado otorgado a:</p>
+                    <p class="recipient-name" id="recipient-name"></p>
+                    <p class="issue-date" id="issue-date"></p>
+                </div>
+                <div class="card-footer">
+                    <a id="verification-link" href="#" class="verification-link" target="_blank">Verificar
+                        Credencial</a>
+                </div>
             </div>
         </div>
 
@@ -102,4 +115,5 @@
 
     <script src="main.dart.js"></script>
 </body>
+
 </html>

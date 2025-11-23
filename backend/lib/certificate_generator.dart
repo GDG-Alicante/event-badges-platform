@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:math';
 
 import 'package:crypto/crypto.dart';
 import 'package:github/github.dart';
@@ -9,20 +8,6 @@ import 'package:gdg_alicante_badges_backend/templates/badge_template.dart';
 // # UUID and Hashing Utilities
 // #############################################################################
 final committer = CommitUser('gdg-alicante', 'gdg-alicante@gmail.com');
-
-class Uuid {
-  final _random = Random();
-  String v4() {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replaceAllMapped(
-      RegExp(r'[xy]'),
-      (match) {
-        final r = (_random.nextInt(16));
-        final v = match.group(0) == 'x' ? r : (r & 0x3 | 0x8);
-        return v.toRadixString(16);
-      },
-    );
-  }
-}
 
 String _hashEmail(String email) {
   final bytes = utf8.encode(email);

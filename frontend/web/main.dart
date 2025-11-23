@@ -31,6 +31,8 @@ void _initializeFrontend() {
     // --- Get references to all needed DOM elements ---
     final claimView = querySelector('#claim-view') as HTMLDivElement;
     final thankYouView = querySelector('#thank-you-view') as HTMLDivElement;
+    final certificateView =
+        querySelector('#certificate-view') as HTMLDivElement;
     final form = querySelector('#claim-form') as HTMLFormElement;
     final emailInput = querySelector('#email-input') as HTMLInputElement;
     final status = querySelector('#status') as HTMLDivElement;
@@ -49,14 +51,32 @@ void _initializeFrontend() {
     // --- Initial State Setup ---
     thankYouView.style.display = 'none';
     claimView.style.display = 'block';
+    certificateView.style.display = 'none';
     submitButton.disabled = true;
 
     // --- Event Loading & URL Parameter Logic ---
     final url = URL(window.location.href);
     final eventSlugFromUrl = url.searchParams.get('event');
+    final certificateIdFromUrl = url.searchParams.get('certificate');
+    final githubOwnerFromUrl = url.searchParams.get('github_owner');
+    final githubRepoFromUrl = url.searchParams.get('github_repo');
 
-    if (eventSlugFromUrl == null || eventSlugFromUrl.isEmpty) {
+    final container = querySelector('.container');
+
+    if (certificateIdFromUrl != null &&
+        eventSlugFromUrl != null &&
+        githubOwnerFromUrl != null &&
+        githubRepoFromUrl != null) {
+      // A certificate ID is present in the URL, so show the certificate view.
+      container.classList.add('certificate-view-active');
+      claimView.style.display = 'none';
+      thankYouView.style.display = 'none';
+      certificateView.style.display = 'block';
+      _showCertificateView(eventSlugFromUrl, certificateIdFromUrl,
+          githubOwnerFromUrl, githubRepoFromUrl);
+    } else if (eventSlugFromUrl == null || eventSlugFromUrl.isEmpty) {
       // No event in URL, so show the event selector.
+      container.classList.remove('certificate-view-active');
       loadingIndicator.style.display = 'block';
       formContainer.style.display = 'none';
       eventSelectorPlaceholder.style.display = 'block';
@@ -65,6 +85,7 @@ void _initializeFrontend() {
           eventSelector, loadingIndicator, formContainer, submitButton);
     } else {
       // An event slug is present in the URL, bypass the selector.
+      container.classList.remove('certificate-view-active');
       loadingIndicator.style.display = 'none';
       formContainer.style.display = 'block';
       eventSelectorPlaceholder.style.display = 'none';
@@ -81,8 +102,8 @@ void _initializeFrontend() {
           e.preventDefault();
           // Use the event from the URL if it exists, otherwise use the one from the dropdown selector.
           final finalEventSlug = eventSlugFromUrl ?? eventSelector.value;
-          _handleFormSubmit(
-              emailInput.value, finalEventSlug, status, submitButton);
+          _handleFormSubmit(emailInput.value, finalEventSlug, status,
+              submitButton, claimView, thankYouView, certificateView);
         }.toJS);
 
     newClaimButton.addEventListener(
@@ -94,6 +115,72 @@ void _initializeFrontend() {
   } catch (e) {
     window
         .alert('A fatal error occurred during initialization: ${e.toString()}');
+  }
+}
+
+Future<void> _showCertificateView(String eventSlug, String certificateId,
+    String githubOwner, String githubRepo) async {
+  final assertionUrl =
+      'https://$githubOwner.github.io/$githubRepo/badges/$eventSlug/$certificateId.json';
+
+  try {
+    // 1. Fetch Assertion
+    final assertionRes = await window.fetch(assertionUrl.toJS).toDart;
+    if (!assertionRes.ok)
+      throw Exception('Could not load assertion: ${assertionRes.statusText}');
+    final assertion = jsonDecode((await assertionRes.text().toDart).toDart)
+        as Map<String, dynamic>;
+
+    // 2. Fetch BadgeClass
+    final badgeUrl = assertion['badge'] as String;
+    final badgeRes = await window.fetch(badgeUrl.toJS).toDart;
+    if (!badgeRes.ok)
+      throw Exception('Could not load badge: ${badgeRes.statusText}');
+    final badge = jsonDecode((await badgeRes.text().toDart).toDart)
+        as Map<String, dynamic>;
+
+    // 3. Fetch Issuer
+    final issuerUrl = badge['issuer'] as String;
+    final issuerRes = await window.fetch(issuerUrl.toJS).toDart;
+    if (!issuerRes.ok)
+      throw Exception('Could not load issuer: ${issuerRes.statusText}');
+    final issuer = jsonDecode((await issuerRes.text().toDart).toDart)
+        as Map<String, dynamic>;
+
+    // 4. Populate HTML
+    document.title = 'Certificate: ${badge['name']}';
+
+    // Issuer info
+    (querySelector('#issuer-logo') as HTMLImageElement).src =
+        issuer['image'] as String;
+    (querySelector('#issuer-logo') as HTMLImageElement).alt =
+        'Logo for ${issuer['name']}';
+
+    // Badge info
+    (querySelector('#badge-image') as HTMLImageElement).src =
+        badge['image'] as String;
+    (querySelector('#badge-image') as HTMLImageElement).alt =
+        'Badge for ${badge['name']}';
+    querySelector('#badge-name').textContent = badge['name'] as String;
+    querySelector('#badge-description').textContent =
+        badge['description'] as String;
+
+    // Recipient & Date
+    querySelector('#recipient-name').textContent = (assertion['recipient']
+        as Map)['identity'] as String; // This is the hashed email
+
+    final issuedOn = DateTime.parse(assertion['issuedOn'] as String);
+    querySelector('#issue-date').textContent =
+        'Issued on ${issuedOn.toLocal()}';
+
+    // Verification link
+    (querySelector('#verification-link') as HTMLAnchorElement).href =
+        assertionUrl;
+  } catch (error) {
+    querySelector('#certificate-view').innerHTML =
+        '<div class="card"><div class="loading-state"><p>Error loading certificate:</p><p style="color: var(--color-red); font-size: 0.9rem;">${error.toString()}</p></div></div>'
+            .toJS;
+    print(error);
   }
 }
 
@@ -113,8 +200,8 @@ Future<void> _loadAvailableEvents(
         for (final event in events) {
           final eventMap = event as Map<String, dynamic>;
           final option = document.createElement('option') as HTMLOptionElement;
-          option.value = eventMap['slug'] ?? '';
-          option.text = eventMap['name'] ?? '';
+          option.value = eventMap['slug'] as String? ?? '';
+          option.text = eventMap['name'] as String? ?? '';
           eventSelector.add(option);
         }
         loadingIndicator.style.display = 'none';
@@ -130,11 +217,18 @@ Future<void> _loadAvailableEvents(
   } catch (e) {
     loadingIndicator.innerText =
         'Error de conexión con el servidor al cargar eventos.';
+    print('Error in _loadAvailableEvents: $e'); // Add this line for debugging
   }
 }
 
-Future<void> _handleFormSubmit(String email, String eventSlug,
-    HTMLDivElement status, HTMLButtonElement submitButton) async {
+Future<void> _handleFormSubmit(
+    String email,
+    String eventSlug,
+    HTMLDivElement status,
+    HTMLButtonElement submitButton,
+    HTMLDivElement claimView,
+    HTMLDivElement thankYouView,
+    HTMLDivElement certificateView) async {
   status.innerText = 'Verificando y generando tu insignia...';
   status.style.display = 'block';
   submitButton.disabled = true;
@@ -160,39 +254,87 @@ Future<void> _handleFormSubmit(String email, String eventSlug,
 
     final responseBody = (await response.text().toDart).toDart;
 
+    void handleSuccess(String certificateUrl) {
+      try {
+        final uri = Uri.parse(certificateUrl);
+        final githubOwner = uri.host.split('.').first;
+        final pathSegments = uri.pathSegments;
+        final githubRepo = pathSegments[0];
+        final eventSlugFromUrl = pathSegments[2];
+
+        _showThankYouScreen(certificateUrl, githubOwner, githubRepo,
+            eventSlugFromUrl, thankYouView, certificateView, claimView);
+      } catch (e) {
+        status.innerText =
+            'Error: No se pudo procesar la URL del certificado: $certificateUrl';
+      }
+    }
+
     if (response.ok) {
       final data = jsonDecode(responseBody) as Map<String, dynamic>;
       final certificateUrl = data['certificate_url'] as String?;
       if (certificateUrl != null) {
-        _showThankYouScreen(certificateUrl);
+        handleSuccess(certificateUrl);
       } else {
         status.innerText =
             'Error: La respuesta del servidor no contenía una URL de certificado.';
       }
+    } else if (response.status == 409) {
+      final data = jsonDecode(responseBody) as Map<String, dynamic>;
+      final certificateUrl = data['certificate_url'] as String?;
+      if (certificateUrl != null) {
+        handleSuccess(certificateUrl);
+      } else {
+        status.innerText =
+            'Error: El certificado ya ha sido reclamado, pero no se pudo obtener la URL.';
+      }
     } else {
-      status.innerText =
-          'Error: ${responseBody.isNotEmpty ? responseBody : response.statusText}';
+      String errorMessage;
+      final statusText = response.statusText;
+      if (responseBody.isNotEmpty) {
+        errorMessage = responseBody;
+      } else {
+        errorMessage = statusText;
+      }
+      status.innerHTML = 'Error: $errorMessage'.toJS;
     }
   } catch (e) {
-    status.innerText = 'Error de conexión con el servidor.';
+    status.innerText =
+        'Error de conexión con el servidor, Inténtelo de nuevo más tarde.';
   } finally {
     submitButton.disabled = false;
   }
 }
 
-void _showThankYouScreen(String certificateUrl) {
-  final claimView = querySelector('#claim-view') as HTMLDivElement;
-  final thankYouView = querySelector('#thank-you-view') as HTMLDivElement;
-  final mainTitle = querySelector('#main-title') as HTMLHeadingElement;
-
+void _showThankYouScreen(
+    String certificateUrl,
+    String githubOwner,
+    String githubRepo,
+    String eventSlug,
+    HTMLDivElement thankYouView,
+    HTMLDivElement certificateView,
+    HTMLDivElement claimView) {
   claimView.style.display = 'none';
+  certificateView.style.display = 'none';
   thankYouView.style.display = 'block';
-  mainTitle.innerText = '¡Insignia Generada!';
 
-  final certificateLink =
-      querySelector('#certificate-link') as HTMLAnchorElement;
-  final openBadgeLink = querySelector('#openbadge-link') as HTMLAnchorElement;
+  final viewBadgeButton = document.querySelector('#view-badge-button');
 
-  certificateLink.href = certificateUrl;
-  openBadgeLink.href = certificateUrl.replaceAll('.html', '.json');
+  // The full URL is for the HTML page, not the JSON assertion.
+  // We need to extract the ID to build the certificate view URL.
+  final certificateId = certificateUrl.split('/').last.replaceAll('.html', '');
+
+  final url = URL(window.location.href);
+  final newUrl = URL(url.origin);
+  newUrl.searchParams.set('event', eventSlug);
+  newUrl.searchParams.set('certificate', certificateId);
+  newUrl.searchParams.set('github_owner', githubOwner);
+  newUrl.searchParams.set('github_repo', githubRepo);
+
+  // Redirect on button click
+  if (viewBadgeButton != null) {
+    viewBadgeButton.onClick.first.then((_) {
+      window.location.href = newUrl.href;
+    });
+  }
 }

@@ -12,6 +12,7 @@ import 'package:gdg_alicante_badges_backend/certificate_generator.dart';
 // Imports for official Google APIs
 import 'package:googleapis/firestore/v1.dart' as firestore;
 import 'package:googleapis_auth/auth_io.dart';
+import 'package:uuid/uuid.dart';
 
 // --- Globals for APIs and Config ---
 
@@ -96,21 +97,20 @@ Future<Response> _eventsHandler(Request request) async {
       '$_dbRoot',
       'event_details',
     );
-    final eventList = result.documents
-            ?.map((doc) {
-              final map = _fromFirestoreValues(doc);
-              return {
-                'slug': doc.name?.split('/').last, // Extract slug from full path
-                'name': map['name'],
-              };
-            })
-            .toList() ??
+    final eventList = result.documents?.map((doc) {
+          final map = _fromFirestoreValues(doc);
+          return {
+            'slug': doc.name?.split('/').last, // Extract slug from full path
+            'name': map['name'],
+          };
+        }).toList() ??
         [];
     return Response.ok(jsonEncode(eventList),
         headers: {'Content-Type': 'application/json'});
   } catch (e) {
     print('Error fetching events: $e');
-    return Response.internalServerError(body: 'Could not fetch events.');
+    return Response.internalServerError(
+        body: 'No se pudieron obtener los eventos.');
   }
 }
 
@@ -122,7 +122,7 @@ Future<Response> _claimHandler(Request request) async {
   final eventSlug = params['event_slug'];
 
   if (email == null || eventSlug == null) {
-    return Response.badRequest(body: 'Missing email or event_slug');
+    return Response.badRequest(body: 'Falta el email o el slug del evento');
   }
 
   // 2. Validate against Firestore.
@@ -131,12 +131,13 @@ Future<Response> _claimHandler(Request request) async {
   final attendeeDocPath = '$_dbRoot/events/$eventSlug/attendees/$hashedEmail';
 
   try {
-    final attendeeDoc = await _api.projects.databases.documents.get(attendeeDocPath);
+    final attendeeDoc =
+        await _api.projects.databases.documents.get(attendeeDocPath);
     final attendee = _fromFirestoreValues(attendeeDoc);
 
     if (attendee.isEmpty) {
       return Response.notFound(
-          'Attendee with that email not found for this event.');
+          'No se encontró un asistente con ese email para este evento.');
     }
 
     final attendeeName = attendee['name'];
@@ -144,7 +145,7 @@ Future<Response> _claimHandler(Request request) async {
     if (attendee['claimed_certificate'] == true) {
       return Response(409,
           body:
-              'Certificate already claimed. URL: ${attendee['certificate_url']}');
+              'Certificado ya reclamado. <a href="${attendee['certificate_url']}">Ver certificado</a>');
     }
 
     // Fetch event details
@@ -152,7 +153,8 @@ Future<Response> _claimHandler(Request request) async {
         .get('$_dbRoot/event_details/$eventSlug');
     final eventDetails = _fromFirestoreValues(eventDetailsDoc);
     if (eventDetails.isEmpty) {
-      return Response.notFound('Event details not found for $eventSlug.');
+      return Response.notFound(
+          'No se encontraron detalles del evento para $eventSlug.');
     }
     eventDetails['slug'] = eventSlug; // Add slug to eventDetails
 
@@ -168,9 +170,9 @@ Future<Response> _claimHandler(Request request) async {
       'email': email, // Add email for Open Badge
     };
 
-      // Generate HTML badge, now with the attendee's name.
-      final htmlContent = generateHtmlBadge(attendeeName);
-      final htmlPath = 'badges/$eventSlug/$certificateId.html';
+    // Generate HTML badge, now with the attendee's name.
+    final htmlContent = generateHtmlBadge(attendeeName);
+    final htmlPath = 'badges/$eventSlug/$certificateId.html';
     // Generate Open Badge JSON
     final openBadgeJson = generateAssertionJson(
         badgeData, _githubOwner, _githubPublicRepo, eventDetails);
@@ -209,13 +211,18 @@ Future<Response> _claimHandler(Request request) async {
       'claimed_certificate': true,
       'certificate_url': certificateUrl
     };
-    final updateDoc = firestore.Document(fields: _toFirestoreValues(updateData));
+    final updateDoc =
+        firestore.Document(fields: _toFirestoreValues(updateData));
     await _api.projects.databases.documents.patch(updateDoc, attendeeDocPath,
         updateMask_fieldPaths: updateData.keys.toList());
 
     // 6. Return the certificate URL.
     return Response.ok(
-      jsonEncode({'certificate_url': certificateUrl}),
+      jsonEncode({
+        'certificate_url': certificateUrl,
+        'github_owner': _githubOwner,
+        'github_repo': _githubPublicRepo
+      }),
       headers: {'Content-Type': 'application/json'},
     );
   } on firestore.DetailedApiRequestError catch (e) {
@@ -224,10 +231,11 @@ Future<Response> _claimHandler(Request request) async {
           'Attendee with that email not found for this event.');
     }
     print('Firestore API Error: ${e.message}');
-    return Response.internalServerError(body: 'An error occurred with the database.');
+    return Response.internalServerError(
+        body: 'Ocurrió un error con la base de datos.');
   } catch (e) {
     print('Error during claim process: $e');
-    return Response.internalServerError(body: 'An internal error occurred.');
+    return Response.internalServerError(body: 'Ocurrió un error interno.');
   }
 }
 
@@ -240,7 +248,7 @@ void main(List<String> args) async {
     print('GCP_PROJECT_ID environment variable not set.');
     exit(1);
   }
-  
+
   // This works locally (via gcloud auth) and on Cloud Run (via service account)
   final client = await clientViaApplicationDefaultCredentials(
     scopes: [firestore.FirestoreApi.datastoreScope],
