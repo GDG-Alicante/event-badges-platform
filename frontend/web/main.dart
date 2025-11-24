@@ -41,8 +41,6 @@ void _initializeFrontend() {
     final loadingIndicator =
         querySelector('#loading-indicator') as HTMLDivElement;
     final formContainer = querySelector('#form-container') as HTMLDivElement;
-    final newClaimButton =
-        querySelector('#new-claim-button') as HTMLButtonElement;
     final eventNameElement = querySelector('#event-name') as HTMLHeadingElement;
     final eventSelectorPlaceholder =
         querySelector('#event-selector-placeholder') as HTMLDivElement;
