@@ -35,5 +35,6 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./frontend/build/web
           exclude_assets: '**.deps' # Exclude .deps files
+          keep_files: true # Do not delete existing files
           publish_branch: gh-pages
 
