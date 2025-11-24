@@ -80,9 +80,8 @@
 
                 <p>Tu insignia está siendo generanda.</p>
 
-                <p>Esto puede tardar unos minutos. Se te redirigirá a la página de tu insignia, que estará disponible en
-                    cuanto termine el proceso.</p>
-                <p>Si la redirección automática falla, usa el botón de abajo.</p>
+                <p>Esto puede tardar unos minutos.</p>
+             
             </div>
             <div class="button-group">
                 <button id="view-badge-button">Ir a la página de la insignia</button>
@@ -100,13 +99,35 @@
                     <img id="badge-image" src="" alt="Imagen de la Insignia" class="badge-image">
                     <h2 id="badge-name" class="badge-name"></h2>
                     <p id="badge-description" class="badge-description"></p>
-                    <p class="recipient-intro">Certificado otorgado a:</p>
-                    <p class="recipient-name" id="recipient-name"></p>
+
                     <p class="issue-date" id="issue-date"></p>
                 </div>
                 <div class="card-footer">
-                    <a id="verification-link" href="#" class="verification-link" target="_blank">Verificar
-                        Credencial</a>
+                    <div class="verification-area">
+                        <span>URL del Open Badge:</span>
+                        <div class="url-container">
+                            <input type="text" id="assertion-url-input" readonly>
+                            <button id="copy-url-button" title="Copiar URL">
+                                <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="M360-240q-33 0-56.5-23.5T280-320v-480q0-33 23.5-56.5T360-880h360q33 0 56.5 23.5T800-800v480q0 33-23.5 56.5T720-240H360Zm0-80h360v-480H360v480ZM200-80q-33 0-56.5-23.5T120-160v-560h80v560h440v80H200Zm160-160v-480 480Z"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="next-steps">
+                <div class="next-steps-body">
+                    <h3>Siguientes Pasos</h3>
+                    <p>Puedes importar y gestionar tu insignia en estas plataformas. Para que funcione correctamente, deberás estar logueado con el mismo email con el que se generó el certificado:</p>
+                    <ul>
+                        <li><a href="https://openbadgepassport.com/" target="_blank" rel="noopener noreferrer">Open Badge Passport</a></li>
+                        <li><a href="https://www.credly.com/" target="_blank" rel="noopener noreferrer">Credly</a></li>
+                        <li><a href="https://www.badgr.com/" target="_blank" rel="noopener noreferrer">Badgr</a></li>
+                        <li><a href="https://www.parchment.com/badges/" target="_blank" rel="noopener noreferrer">Parchment</a></li>
+                    </ul>
+                    <p>O verificar su validez aquí:</p>
+                    <ul>
+                        <li><a href="https://badgecheck.io/" target="_blank" rel="noopener noreferrer">BadgeCheck.io</a></li>
+                    </ul>
                 </div>
             </div>
         </div>

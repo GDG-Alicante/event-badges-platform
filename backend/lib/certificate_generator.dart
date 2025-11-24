@@ -19,10 +19,10 @@ String _hashEmail(String email) {
 // # HTML Badge Generation
 // #############################################################################
 
-String generateHtmlBadge(String attendeeName) {
+String generateHtmlBadge(String assertionUrl) {
   final templateContent = getBadgeHtmlTemplate();
   // Simple string replacement is enough, no need for a full template engine.
-  return templateContent.replaceFirst('{{RECIPIENT_NAME}}', attendeeName);
+  return templateContent.replaceFirst('{{ASSERTION_URL}}', assertionUrl);
 }
 
 // #############################################################################

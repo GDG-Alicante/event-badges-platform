@@ -43,7 +43,6 @@ void _initializeFrontend() {
     final formContainer = querySelector('#form-container') as HTMLDivElement;
     final newClaimButton =
         querySelector('#new-claim-button') as HTMLButtonElement;
-    // final mainTitle = querySelector('#main-title') as HTMLHeadingElement;
     final eventNameElement = querySelector('#event-name') as HTMLHeadingElement;
     final eventSelectorPlaceholder =
         querySelector('#event-selector-placeholder') as HTMLDivElement;
@@ -56,56 +55,52 @@ void _initializeFrontend() {
 
     // --- Event Loading & URL Parameter Logic ---
     final url = URL(window.location.href);
-    final eventSlugFromUrl = url.searchParams.get('event');
-    final certificateIdFromUrl = url.searchParams.get('certificate');
-    final githubOwnerFromUrl = url.searchParams.get('github_owner');
-    final githubRepoFromUrl = url.searchParams.get('github_repo');
+    final assertionUrlFromUrl = url.searchParams.get('assertion');
 
     final container = querySelector('.container');
 
-    if (certificateIdFromUrl != null &&
-        eventSlugFromUrl != null &&
-        githubOwnerFromUrl != null &&
-        githubRepoFromUrl != null) {
-      // A certificate ID is present in the URL, so show the certificate view.
+    if (assertionUrlFromUrl != null) {
+      // An assertion URL is present, so show the certificate view.
       container.classList.add('certificate-view-active');
       claimView.style.display = 'none';
       thankYouView.style.display = 'none';
       certificateView.style.display = 'block';
-      _showCertificateView(eventSlugFromUrl, certificateIdFromUrl,
-          githubOwnerFromUrl, githubRepoFromUrl);
-    } else if (eventSlugFromUrl == null || eventSlugFromUrl.isEmpty) {
-      // No event in URL, so show the event selector.
-      container.classList.remove('certificate-view-active');
-      loadingIndicator.style.display = 'block';
-      formContainer.style.display = 'none';
-      eventSelectorPlaceholder.style.display = 'block';
-      eventNameElement.style.display = 'none';
-      _loadAvailableEvents(
-          eventSelector, loadingIndicator, formContainer, submitButton);
+      _showCertificateView(assertionUrlFromUrl);
     } else {
-      // An event slug is present in the URL, bypass the selector.
+      // No assertion URL, so proceed with the claim flow.
+      final eventSlugFromUrl = url.searchParams.get('event');
       container.classList.remove('certificate-view-active');
-      loadingIndicator.style.display = 'none';
-      formContainer.style.display = 'block';
-      eventSelectorPlaceholder.style.display = 'none';
-      eventNameElement.innerText =
-          eventSlugFromUrl.replaceAll('-', ' ').toUpperCase(); // Simple format
-      eventNameElement.style.display = 'block';
-      submitButton.disabled = false;
+      if (eventSlugFromUrl == null || eventSlugFromUrl.isEmpty) {
+        // No event in URL, so show the event selector.
+        loadingIndicator.style.display = 'block';
+        formContainer.style.display = 'none';
+        eventSelectorPlaceholder.style.display = 'block';
+        eventNameElement.style.display = 'none';
+        _loadAvailableEvents(
+            eventSelector, loadingIndicator, formContainer, submitButton);
+      } else {
+        // An event slug is present in the URL, bypass the selector.
+        loadingIndicator.style.display = 'none';
+        formContainer.style.display = 'block';
+        eventSelectorPlaceholder.style.display = 'none';
+        eventNameElement.innerText =
+            eventSlugFromUrl.replaceAll('-', ' ').toUpperCase(); // Simple format
+        eventNameElement.style.display = 'block';
+        submitButton.disabled = false;
+      }
+
+      // Setup form listener only if we are in the claim flow
+      form.addEventListener(
+          'submit',
+          (Event e) {
+            e.preventDefault();
+            final finalEventSlug = eventSlugFromUrl ?? eventSelector.value;
+            _handleFormSubmit(emailInput.value, finalEventSlug, status,
+                submitButton, claimView, thankYouView, certificateView);
+          }.toJS);
     }
 
-    // --- Event Listeners ---
-    form.addEventListener(
-        'submit',
-        (Event e) {
-          e.preventDefault();
-          // Use the event from the URL if it exists, otherwise use the one from the dropdown selector.
-          final finalEventSlug = eventSlugFromUrl ?? eventSelector.value;
-          _handleFormSubmit(emailInput.value, finalEventSlug, status,
-              submitButton, claimView, thankYouView, certificateView);
-        }.toJS);
-
+    // This listener is always active
     newClaimButton.addEventListener(
         'click',
         (Event e) {
@@ -118,11 +113,7 @@ void _initializeFrontend() {
   }
 }
 
-Future<void> _showCertificateView(String eventSlug, String certificateId,
-    String githubOwner, String githubRepo) async {
-  final assertionUrl =
-      'https://$githubOwner.github.io/$githubRepo/badges/$eventSlug/$certificateId.json';
-
+Future<void> _showCertificateView(String assertionUrl) async {
   try {
     // 1. Fetch Assertion
     final assertionRes = await window.fetch(assertionUrl.toJS).toDart;
@@ -165,17 +156,36 @@ Future<void> _showCertificateView(String eventSlug, String certificateId,
     querySelector('#badge-description').textContent =
         badge['description'] as String;
 
-    // Recipient & Date
-    querySelector('#recipient-name').textContent = (assertion['recipient']
-        as Map)['identity'] as String; // This is the hashed email
+
 
     final issuedOn = DateTime.parse(assertion['issuedOn'] as String);
     querySelector('#issue-date').textContent =
         'Issued on ${issuedOn.toLocal()}';
 
-    // Verification link
-    (querySelector('#verification-link') as HTMLAnchorElement).href =
-        assertionUrl;
+    // Verification link & copy functionality
+    final assertionUrlInput =
+        querySelector('#assertion-url-input') as HTMLInputElement;
+    assertionUrlInput.value = assertionUrl;
+
+    final copyUrlButton = querySelector('#copy-url-button') as HTMLButtonElement;
+    final originalButtonContent = copyUrlButton.innerHTML;
+
+    final void Function(Event) copyClickListener = (Event event) {
+      window.navigator.clipboard.writeText(assertionUrl).toDart.then((_) {
+        copyUrlButton.textContent = '¡Copiado!';
+        Future.delayed(const Duration(seconds: 2), () {
+          copyUrlButton.innerHTML = originalButtonContent;
+        });
+      }).catchError((e) {
+        copyUrlButton.textContent = 'Error';
+        print('Could not copy text: $e');
+        Future.delayed(const Duration(seconds: 2), () {
+          copyUrlButton.innerHTML = originalButtonContent;
+        });
+      });
+    };
+
+    copyUrlButton.addEventListener('click', copyClickListener.toJS);
   } catch (error) {
     querySelector('#certificate-view').innerHTML =
         '<div class="card"><div class="loading-state"><p>Error loading certificate:</p><p style="color: var(--color-red); font-size: 0.9rem;">${error.toString()}</p></div></div>'
@@ -280,14 +290,9 @@ Future<void> _handleFormSubmit(
             'Error: La respuesta del servidor no contenía una URL de certificado.';
       }
     } else if (response.status == 409) {
-      final data = jsonDecode(responseBody) as Map<String, dynamic>;
-      final certificateUrl = data['certificate_url'] as String?;
-      if (certificateUrl != null) {
-        handleSuccess(certificateUrl);
-      } else {
-        status.innerText =
-            'Error: El certificado ya ha sido reclamado, pero no se pudo obtener la URL.';
-      }
+      // The backend returns a helpful HTML string with a link.
+      // Set it directly as the innerHTML of the status element.
+      status.innerHTML = responseBody.toJS;
     } else {
       String errorMessage;
       final statusText = response.statusText;
@@ -318,23 +323,12 @@ void _showThankYouScreen(
   certificateView.style.display = 'none';
   thankYouView.style.display = 'block';
 
-  final viewBadgeButton = document.querySelector('#view-badge-button');
+  final viewBadgeButton =
+      querySelector('#view-badge-button') as HTMLButtonElement;
 
-  // The full URL is for the HTML page, not the JSON assertion.
-  // We need to extract the ID to build the certificate view URL.
-  final certificateId = certificateUrl.split('/').last.replaceAll('.html', '');
-
-  final url = URL(window.location.href);
-  final newUrl = URL(url.origin);
-  newUrl.searchParams.set('event', eventSlug);
-  newUrl.searchParams.set('certificate', certificateId);
-  newUrl.searchParams.set('github_owner', githubOwner);
-  newUrl.searchParams.set('github_repo', githubRepo);
-
-  // Redirect on button click
-  if (viewBadgeButton != null) {
-    viewBadgeButton.onClick.first.then((_) {
-      window.location.href = newUrl.href;
-    });
-  }
+  viewBadgeButton.addEventListener('click', (event) {
+    // The certificateUrl from the backend already points to the redirector .html file.
+    // Simply navigate to it.
+    window.location.href = certificateUrl;
+  }.toJS);
 }

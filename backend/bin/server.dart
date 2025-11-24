@@ -170,13 +170,18 @@ Future<Response> _claimHandler(Request request) async {
       'email': email, // Add email for Open Badge
     };
 
-    // Generate HTML badge, now with the attendee's name.
-    final htmlContent = generateHtmlBadge(attendeeName);
-    final htmlPath = 'badges/$eventSlug/$certificateId.html';
     // Generate Open Badge JSON
     final openBadgeJson = generateAssertionJson(
         badgeData, _githubOwner, _githubPublicRepo, eventDetails);
     final openBadgePath = 'badges/$eventSlug/$certificateId.json';
+
+    // Construct the full URL to the assertion JSON for the redirect template
+    final assertionUrl =
+        'https://${_githubOwner.toLowerCase()}.github.io/${_githubPublicRepo.toLowerCase()}/$openBadgePath';
+
+    // Generate HTML badge, passing the assertion URL to it.
+    final htmlContent = generateHtmlBadge(assertionUrl);
+    final htmlPath = 'badges/$eventSlug/$certificateId.html';
 
     // 4. Commit HTML and Open Badge JSON to GitHub Pages.
     print(
@@ -203,7 +208,7 @@ Future<Response> _claimHandler(Request request) async {
 
     // The URL will point to the public GitHub Pages URL.
     final certificateUrl =
-        'https://$_githubOwner.github.io/$_githubPublicRepo/$htmlPath';
+        'https://${_githubOwner.toLowerCase()}.github.io/${_githubPublicRepo.toLowerCase()}/$htmlPath';
 
     // 5. Update Firestore.
     print('Updating Firestore record for $email...');

@@ -302,6 +302,12 @@ button.secondary:hover {
 }
 
 /* Certificate View Styles */
+#certificate-view {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
 .card {
     background-color: white;
     border-radius: 8px;
@@ -366,6 +372,52 @@ button.secondary:hover {
     padding: 16px;
     border-top: 1px solid #e0e0e0;
     font-size: 0.8rem;
+}
+.verification-area {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+}
+.verification-area span {
+    font-weight: 500;
+    color: var(--text-dark);
+}
+.url-container {
+    display: flex;
+    width: 100%;
+    max-width: 450px;
+}
+#assertion-url-input {
+    width: 100%;
+    border: 1px solid #e0e0e0;
+    border-right: none;
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    color: var(--text-light);
+    background-color: #fff;
+    border-radius: 8px 0 0 8px;
+    outline: none;
+}
+#copy-url-button {
+    width: auto;
+    margin: 0;
+    padding: 0 12px;
+    border-radius: 0 8px 8px 0;
+    border: 1px solid #e0e0e0;
+    background-color: #f5f5f5;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease;
+    color: var(--text-dark); /* Make text dark for visibility */
+}
+#copy-url-button:hover {
+    background-color: #e0e0e0;
+}
+#copy-url-button svg {
+    fill: var(--text-medium);
 }
 .verification-link {
     color: var(--gdg-blue);
@@ -435,6 +487,57 @@ button.secondary:hover {
     color: var(--gdg-blue);
     animation: dotFlashing 1s infinite alternate;
     animation-delay: 1s;
+}
+
+/* Next Steps Section Styles */
+.next-steps {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    width: 90%;
+    max-width: 600px;
+    text-align: center; /* Center the whole block */
+    padding: 0; /* Remove padding from the outer container */
+    margin-top: 24px; /* Let the parent flexbox handle centering */
+}
+.next-steps-body {
+    padding: 24px; /* Apply padding to the inner content */
+    text-align: left; /* Keep text aligned left inside the body */
+}
+.next-steps h3 {
+    margin-top: 0;
+    color: var(--gdg-blue);
+    font-size: 1.2rem;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 8px;
+    margin-bottom: 16px;
+}
+.next-steps p {
+    margin-top: 0;
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+}
+.next-steps ul {
+    list-style: none;
+    padding-left: 0;
+    margin-bottom: 16px;
+}
+.next-steps li {
+    margin-bottom: 8px;
+}
+.next-steps a {
+    color: var(--text-dark);
+    text-decoration: none;
+    font-weight: 500;
+    display: block;
+    padding: 10px;
+    border-radius: 6px;
+    background-color: #f5f5f5;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+.next-steps a:hover {
+    background-color: #e0e0e0;
+    color: var(--gdg-blue);
 }
 
 @keyframes dotFlashing {
