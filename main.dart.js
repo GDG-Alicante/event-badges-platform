@@ -2330,7 +2330,6 @@ m=A.r("#submit-button")
 l=A.r("#event-selector")
 k=A.r("#loading-indicator")
 j=A.r("#form-container")
-A.r("#new-claim-button")
 i=A.r("#event-name")
 h=A.r("#event-selector-placeholder")
 A.d(r.style).display="none"
