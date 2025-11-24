@@ -6,15 +6,15 @@ const backendUrl =
     'https://gdg-event-badges-backend-264650654366.europe-west8.run.app';
 
 void main() {
+  final void Function(Event) domContentLoadedListener = (Event e) {
+    _initializeFrontend();
+  };
+
   if (document.readyState == 'complete' ||
       document.readyState == 'interactive') {
     _initializeFrontend();
   } else {
-    window.addEventListener(
-        'DOMContentLoaded',
-        (Event e) {
-          _initializeFrontend();
-        }.toJS);
+    window.addEventListener('DOMContentLoaded', domContentLoadedListener.toJS);
   }
 }
 
@@ -90,23 +90,21 @@ void _initializeFrontend() {
       }
 
       // Setup form listener only if we are in the claim flow
-      form.addEventListener(
-          'submit',
-          (Event e) {
-            e.preventDefault();
-            final finalEventSlug = eventSlugFromUrl ?? eventSelector.value;
-            _handleFormSubmit(emailInput.value, finalEventSlug, status,
-                submitButton, claimView, thankYouView, certificateView);
-          }.toJS);
+      final void Function(Event) formSubmitListener = (Event e) {
+        e.preventDefault();
+        final finalEventSlug = eventSlugFromUrl ?? eventSelector.value;
+        _handleFormSubmit(emailInput.value, finalEventSlug, status,
+            submitButton, claimView, thankYouView, certificateView);
+      };
+      form.addEventListener('submit', formSubmitListener.toJS);
     }
 
     // This listener is always active
-    newClaimButton.addEventListener(
-        'click',
-        (Event e) {
-          // A full page reload is the cleanest way to reset the state.
-          window.location.href = '/';
-        }.toJS);
+    final void Function(Event) newClaimClickListener = (Event e) {
+      // A full page reload is the cleanest way to reset the state.
+      window.location.href = '/';
+    };
+    newClaimButton.addEventListener('click', newClaimClickListener.toJS);
   } catch (e) {
     window
         .alert('A fatal error occurred during initialization: ${e.toString()}');
@@ -326,9 +324,11 @@ void _showThankYouScreen(
   final viewBadgeButton =
       querySelector('#view-badge-button') as HTMLButtonElement;
 
-  viewBadgeButton.addEventListener('click', (event) {
+  final void Function(Event) viewBadgeClickListener = (Event event) {
     // The certificateUrl from the backend already points to the redirector .html file.
     // Simply navigate to it.
     window.location.href = certificateUrl;
-  }.toJS);
+  };
+
+  viewBadgeButton.addEventListener('click', viewBadgeClickListener.toJS);
 }
