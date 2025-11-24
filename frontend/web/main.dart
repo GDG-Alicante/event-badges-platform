@@ -99,12 +99,7 @@ void _initializeFrontend() {
       form.addEventListener('submit', formSubmitListener.toJS);
     }
 
-    // This listener is always active
-    final void Function(Event) newClaimClickListener = (Event e) {
-      // A full page reload is the cleanest way to reset the state.
-      window.location.href = '/';
-    };
-    newClaimButton.addEventListener('click', newClaimClickListener.toJS);
+
   } catch (e) {
     window
         .alert('A fatal error occurred during initialization: ${e.toString()}');
@@ -162,10 +157,10 @@ Future<void> _showCertificateView(String assertionUrl) async {
 
     // Verification link & copy functionality
     final assertionUrlInput =
-        querySelector('#assertion-url-input') as HTMLInputElement;
+        querySelector('.assertion-url-input') as HTMLInputElement;
     assertionUrlInput.value = assertionUrl;
 
-    final copyUrlButton = querySelector('#copy-url-button') as HTMLButtonElement;
+    final copyUrlButton = querySelector('.copy-url-button') as HTMLButtonElement;
     final originalButtonContent = copyUrlButton.innerHTML;
 
     final void Function(Event) copyClickListener = (Event event) {
@@ -321,13 +316,59 @@ void _showThankYouScreen(
   certificateView.style.display = 'none';
   thankYouView.style.display = 'block';
 
+  // --- Logic for the new Copy Widget in the Thank You screen ---
+  final thankYouAssertionUrlInput =
+      thankYouView.querySelector('.assertion-url-input') as HTMLInputElement;
+  thankYouAssertionUrlInput.value = certificateUrl;
+
+  final thankYouCopyUrlButton =
+      thankYouView.querySelector('.copy-url-button') as HTMLButtonElement;
+  final originalButtonContent = thankYouCopyUrlButton.innerHTML;
+
+  final void Function(Event) copyClickListener = (Event event) {
+    window.navigator.clipboard.writeText(certificateUrl).toDart.then((_) {
+      thankYouCopyUrlButton.textContent = '¡Copiado!';
+      Future.delayed(const Duration(seconds: 2), () {
+        thankYouCopyUrlButton.innerHTML = originalButtonContent;
+      });
+    }).catchError((e) {
+      thankYouCopyUrlButton.textContent = 'Error';
+      print('Could not copy text: $e');
+      Future.delayed(const Duration(seconds: 2), () {
+        thankYouCopyUrlButton.innerHTML = originalButtonContent;
+      });
+    });
+  };
+  thankYouCopyUrlButton.addEventListener('click', copyClickListener.toJS);
+
+  // --- Logic for the "Check on Click" navigation button ---
   final viewBadgeButton =
       querySelector('#view-badge-button') as HTMLButtonElement;
+  final thankYouStatus = querySelector('#thank-you-status') as HTMLDivElement;
 
-  final void Function(Event) viewBadgeClickListener = (Event event) {
-    // The certificateUrl from the backend already points to the redirector .html file.
-    // Simply navigate to it.
-    window.location.href = certificateUrl;
+  final void Function(Event) viewBadgeClickListener = (Event event) async {
+    viewBadgeButton.disabled = true;
+    thankYouStatus.textContent = 'Comprobando...';
+
+    try {
+      final response = await window.fetch(certificateUrl.toJS).toDart;
+      if (response.ok) {
+        thankYouStatus.textContent = '¡Listo! Redirigiendo...';
+        window.location.href = certificateUrl;
+      } else {
+        thankYouStatus.textContent =
+            'Aún no está lista, inténtalo de nuevo en un momento.';
+        // Clear the message after a few seconds
+        Future.delayed(const Duration(seconds: 3), () {
+          thankYouStatus.textContent = '';
+        });
+      }
+    } catch (e) {
+      thankYouStatus.textContent = 'Error de red al comprobar el estado.';
+      print('Error fetching certificate URL: $e');
+    } finally {
+      viewBadgeButton.disabled = false;
+    }
   };
 
   viewBadgeButton.addEventListener('click', viewBadgeClickListener.toJS);

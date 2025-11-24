@@ -388,7 +388,7 @@ button.secondary:hover {
     width: 100%;
     max-width: 450px;
 }
-#assertion-url-input {
+.assertion-url-input {
     width: 100%;
     border: 1px solid #e0e0e0;
     border-right: none;
@@ -399,7 +399,7 @@ button.secondary:hover {
     border-radius: 8px 0 0 8px;
     outline: none;
 }
-#copy-url-button {
+.copy-url-button {
     width: auto;
     margin: 0;
     padding: 0 12px;
@@ -413,10 +413,10 @@ button.secondary:hover {
     transition: background-color 0.2s ease;
     color: var(--text-dark); /* Make text dark for visibility */
 }
-#copy-url-button:hover {
+.copy-url-button:hover {
     background-color: #e0e0e0;
 }
-#copy-url-button svg {
+.copy-url-button svg {
     fill: var(--text-medium);
 }
 .verification-link {

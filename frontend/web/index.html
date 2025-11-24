@@ -76,16 +76,27 @@
                 <img src="gdg_logo.png" alt="Logo GDG Alicante" class="gdg-logo">
             </div>
             <div class="prose">
-                <h2>Enhorabuena!</h2>
-
-                <p>Tu insignia está siendo generanda.</p>
-
-                <p>Esto puede tardar unos minutos.</p>
-             
+                <h2>¡Enhorabuena!</h2>
+                <p>Hemos enviado tu insignia para su publicación. Estará lista en unos minutos.</p>
+                <p>Puedes copiar la URL final de tu certificado a continuación.</p>
             </div>
+
+            <div class="card-footer" style="background: transparent; border-top: none; padding-top: 0;">
+                <div class="verification-area">
+                    <div class="url-container">
+                        <input type="text" class="assertion-url-input" readonly>
+                        <button class="copy-url-button" title="Copiar URL">
+                            <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="M360-240q-33 0-56.5-23.5T280-320v-480q0-33 23.5-56.5T360-880h360q33 0 56.5 23.5T800-800v480q0 33-23.5 56.5T720-240H360Zm0-80h360v-480H360v480ZM200-80q-33 0-56.5-23.5T120-160v-560h80v560h440v80H200Zm160-160v-480 480Z"/></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="thank-you-status" style="min-height: 24px; margin-top: 1rem;"></div>
+
             <div class="button-group">
                 <button id="view-badge-button">Ir a la página de la insignia</button>
-                <button id="new-claim-button" class="secondary">Reclamar otra insignia</button>
+
             </div>
         </div>
 
@@ -106,8 +117,8 @@
                     <div class="verification-area">
                         <span>URL del Open Badge:</span>
                         <div class="url-container">
-                            <input type="text" id="assertion-url-input" readonly>
-                            <button id="copy-url-button" title="Copiar URL">
+                            <input type="text" class="assertion-url-input" readonly>
+                            <button class="copy-url-button" title="Copiar URL">
                                 <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="M360-240q-33 0-56.5-23.5T280-320v-480q0-33 23.5-56.5T360-880h360q33 0 56.5 23.5T800-800v480q0 33-23.5 56.5T720-240H360Zm0-80h360v-480H360v480ZM200-80q-33 0-56.5-23.5T120-160v-560h80v560h440v80H200Zm160-160v-480 480Z"/></svg>
                             </button>
                         </div>
