@@ -154,11 +154,13 @@ Future<void> _showCertificateView(String assertionUrl) async {
         'Issued on ${issuedOn.toLocal()}';
 
     // Verification link & copy functionality
+    final certificateViewElement = querySelector('#certificate-view');
     final assertionUrlInput =
-        querySelector('.assertion-url-input') as HTMLInputElement;
+        certificateViewElement.querySelector('.assertion-url-input') as HTMLInputElement;
     assertionUrlInput.value = assertionUrl;
 
-    final copyUrlButton = querySelector('.copy-url-button') as HTMLButtonElement;
+    final copyUrlButton =
+        certificateViewElement.querySelector('.copy-url-button') as HTMLButtonElement;
     final originalButtonContent = copyUrlButton.innerHTML;
 
     final void Function(Event) copyClickListener = (Event event) {
